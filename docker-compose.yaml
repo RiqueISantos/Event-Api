@@ -1,0 +1,32 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:12.2
+    container_name: postgres
+    restart: always
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: database
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+  flyway:
+    image: flyway/flyway:9
+    container_name: flyway
+    command: >
+      -configFiles=/flyway/conf/flyway.config
+      -locations=filesystem:/flyway/sql
+      -connectRetries=60
+      migrate
+    volumes:
+      - ./sql_versions:/flyway/sql
+      - ./docker-flyway.config:/flyway/conf/flyway.config
+    depends_on:
+      - postgres
+
+volumes:
+  pgdata:
